@@ -31,7 +31,7 @@ fn calculate_fitness(individual: &Individual) -> u32 {
     individual.genes.iter().filter(|&n| *n == 1).count() as u32
 }
 
-fn calculate_total_fitness(pop: Vec<Individual>) -> u32 {
+fn calculate_total_fitness(pop: &Vec<Individual>) -> u32 {
     pop.iter().map(|i| i.fitness).sum()
 }
 
@@ -72,8 +72,11 @@ fn main() {
         new_pop.push(create_single_offspring_from_pop(&population));
     }
 
-    let old_fitness: u32 = population.iter().map(|i| i.fitness).sum();
-    let new_fitness: u32 = new_pop.iter().map(|i| i.fitness).sum();
+    let old_fitness = calculate_total_fitness(&population);
+    let new_fitness = calculate_total_fitness(&new_pop);
+
+    println!("{}", old_fitness);
+    println!("{}", new_fitness);
 
     assert!(new_fitness > old_fitness);
     println!("Fitness of population increased!");
