@@ -31,11 +31,11 @@ fn calculate_fitness(individual: &Individual) -> u32 {
     individual.genes.iter().filter(|&n| *n == 1).count() as u32
 }
 
-fn calculate_total_fitness(pop: &Vec<Individual>) -> u32 {
+fn calculate_total_fitness(pop: &[Individual]) -> u32 {
     pop.iter().map(|i| i.fitness).sum()
 }
 
-fn create_single_offspring_from_pop(pop: &Vec<Individual>) -> Individual {
+fn create_single_offspring_from_pop(pop: &[Individual]) -> Individual {
     let mut rng = rand::thread_rng();
     let dad = pop.choose(&mut rng).unwrap();
     let mum = pop.choose(&mut rng).unwrap();
