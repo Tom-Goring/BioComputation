@@ -1,6 +1,8 @@
-#![allow(dead_code, unused_variables, unused_mut)]
+mod tasks;
 
 mod genetics;
 mod nn;
 
 pub use genetics::*;
+pub use nn::*;
+pub use tasks::*;

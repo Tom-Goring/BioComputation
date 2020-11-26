@@ -38,8 +38,6 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
     total_generational_fitness.push(total_fitness);
     average_generational_fitness.push(total_fitness / population.len() as f64);
 
-    let mut current_generation = 1;
-
     for _ in 0..config.epochs {
         let mut breeding_population = Vec::new();
 
@@ -71,7 +69,6 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
         }
 
         population = new_population;
-        current_generation += 1;
         let total_fitness: f64 = population
             .iter()
             .map(|individual| individual.fitness())
