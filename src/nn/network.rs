@@ -1,7 +1,9 @@
 use rand::Rng;
 
+#[derive(Clone)]
 pub struct Network {
     pub layers: Vec<Vec<Neuron>>,
+    layer_sizes: Vec<u32>,
 }
 
 impl Network {
@@ -22,7 +24,18 @@ impl Network {
             prev_layer_size = layer_size;
         }
         layers.shrink_to_fit();
-        Self { layers }
+        Self {
+            layers,
+            layer_sizes: layer_sizes.to_vec(),
+        }
+    }
+
+    pub fn from_layers(layers: Vec<Vec<Neuron>>) -> Network {
+        let layer_sizes = layers.iter().map(|layer| layer.len() as u32).collect();
+        Self {
+            layers,
+            layer_sizes,
+        }
     }
 
     pub fn train(&mut self) {}
@@ -45,11 +58,18 @@ impl Network {
     }
 }
 
+#[derive(Clone)]
 pub struct Neuron {
     pub weights: Vec<f64>,
 }
 
 impl Neuron {
+    pub fn new(weights: &[f64]) -> Self {
+        Self {
+            weights: weights.to_vec(),
+        }
+    }
+
     pub fn from_rng(num_weights: u32) -> Self {
         let mut rng = rand::thread_rng();
         let weights = (0..num_weights)
@@ -60,17 +80,25 @@ impl Neuron {
     }
 
     pub fn process_inputs(&self, inputs: &[f64]) -> f64 {
-        step(process_inputs_with_bias(&self.weights, inputs), 0.0)
+        sigmoid(process_inputs_with_bias(&self.weights, inputs))
+    }
+
+    pub fn weights(&self) -> &Vec<f64> {
+        &self.weights
+    }
+
+    pub fn update_weights(&mut self, weights: &[f64]) {
+        self.weights = weights.to_vec();
     }
 }
 
 #[inline]
-fn _sigmoid(f: f64) -> f64 {
+fn sigmoid(f: f64) -> f64 {
     1.0 / (1.0 + (-f).exp())
 }
 
 #[inline]
-fn step(value: f64, threshold: f64) -> f64 {
+fn _step(value: f64, threshold: f64) -> f64 {
     if value > threshold {
         1.0
     } else {

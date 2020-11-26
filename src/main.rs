@@ -1,9 +1,5 @@
-use bio_computation::network::Network;
+use bio_computation::run_data_science_task;
 
 fn main() {
-    let nn = Network::new(&[2, 1]);
-    println!("{:?}", nn.predict(&[0.0, 0.0]));
-    println!("{:?}", nn.predict(&[0.0, 1.0]));
-    println!("{:?}", nn.predict(&[1.0, 0.0]));
-    println!("{:?}", nn.predict(&[1.0, 1.0]));
+    run_data_science_task();
 }

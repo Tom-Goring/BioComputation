@@ -16,12 +16,13 @@ pub struct AlgorithmConfig {
     pub mutation_size: f64,
 }
 
-pub struct AlgorithmStats {
+pub struct AlgorithmStats<I: Individual> {
     pub total_generational_fitness: Vec<f64>,
     pub average_generational_fitness: Vec<f64>,
+    pub solution: I,
 }
 
-pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
+pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats<I> {
     let mut total_generational_fitness = Vec::new();
     let mut average_generational_fitness = Vec::new();
     let mut population: Vec<I> = Vec::new();
@@ -37,6 +38,8 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
         .sum();
     total_generational_fitness.push(total_fitness);
     average_generational_fitness.push(total_fitness / population.len() as f64);
+
+    let mut best_candidate: I = I::new();
 
     for _ in 0..config.epochs {
         let mut breeding_population = Vec::new();
@@ -68,6 +71,11 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
             new_population.push(child2);
         }
 
+        new_population.sort_by(|a, b| a.fitness().partial_cmp(&b.fitness()).unwrap());
+        if new_population.last().unwrap().fitness() > best_candidate.fitness() {
+            best_candidate = new_population.last().unwrap().clone();
+        }
+
         population = new_population;
         let total_fitness: f64 = population
             .iter()
@@ -80,5 +88,6 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats {
     AlgorithmStats {
         total_generational_fitness,
         average_generational_fitness,
+        solution: best_candidate,
     }
 }
