@@ -1,4 +1,6 @@
-mod ga;
+#![allow(dead_code, unused_variables, unused_mut)]
 
-pub use ga::Individual;
-pub use ga::Population;
+mod genetics;
+mod nn;
+
+pub use genetics::*;
