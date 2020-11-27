@@ -38,8 +38,6 @@ impl Network {
         }
     }
 
-    pub fn train(&mut self) {}
-
     pub fn predict(&self, inputs: &[f64]) -> f64 {
         *self.run(inputs).last().unwrap().last().unwrap()
     }

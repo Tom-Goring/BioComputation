@@ -13,7 +13,24 @@ lazy_static! {
         let file = File::open("data1.txt").expect("File not found");
         let reader = BufReader::new(file);
         let mut data = Vec::new();
-        for line in reader.lines() {
+        for line in reader.lines().take(28) {
+            let tokens = line
+                .unwrap()
+                .split(' ')
+                .map(|token| token.parse().unwrap())
+                .collect::<Vec<f64>>();
+
+            let len = tokens.len();
+
+            data.push((Vec::from(&tokens[0..len - 1]), tokens[len - 1]));
+        }
+        data
+    };
+    static ref TEST_DATA: Vec<(Vec<f64>, f64)> = {
+        let file = File::open("data1.txt").expect("File not found");
+        let reader = BufReader::new(file);
+        let mut data = Vec::new();
+        for line in reader.lines().skip(28) {
             let tokens = line
                 .unwrap()
                 .split(' ')
@@ -31,17 +48,23 @@ lazy_static! {
 pub fn run_data_science_task() {
     let config = crate::AlgorithmConfig {
         population_size: 100,
-        epochs: 10000,
+        epochs: 2000,
         tournament_size: 2,
         mutation_rate: 20.0,
-        mutation_size: 0.1,
+        mutation_size: 0.5,
     };
 
     let stats = crate::run::<Network>(config);
 
     let solution = stats.solution;
 
-    let percent_correct = TRAINING_DATA
+    println!(
+        "Training Len: {}\nTest Len: {}",
+        TRAINING_DATA.len(),
+        TEST_DATA.len()
+    );
+
+    let percent_correct = TEST_DATA
         .iter()
         .map(|(inputs, output)| {
             let x = (
@@ -58,7 +81,7 @@ pub fn run_data_science_task() {
         })
         .filter(|(obtained_answer, ideal_answer)| (*obtained_answer == *ideal_answer))
         .count() as f64
-        / TRAINING_DATA.len() as f64;
+        / TEST_DATA.len() as f64;
 
     println!(
         "{} percent accuracy when solution is run on sample data.",
@@ -90,6 +113,12 @@ impl Individual for Network {
     fn mutate(&self, mutation_rate: f64, mutation_size: f64) -> Self {
         let mut rng = rand::thread_rng();
 
+        let mut mut_mod = 1.0;
+
+        if self.fitness() > 0.5 {
+            mut_mod = 2.0;
+        }
+
         let mut layers = Vec::new();
         // construct new network using old one
         for layer in &self.layers {
@@ -99,7 +128,7 @@ impl Individual for Network {
                 let new_weights = current_weights
                     .iter()
                     .map(|weight| {
-                        if rng.gen_range(0.0, 100.0) < mutation_rate {
+                        if rng.gen_range(0.0, 100.0) < mutation_rate * mut_mod {
                             let mut_size = rng.gen_range(0.0, mutation_size);
                             if rng.gen_bool(0.5) {
                                 weight + mut_size
