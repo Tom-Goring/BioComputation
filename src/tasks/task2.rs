@@ -50,7 +50,7 @@ lazy_static! {
 pub fn run_data_science_task() {
     let config = crate::AlgorithmConfig {
         population_size: 10000,
-        epochs: 500,
+        epochs: 5000,
         tournament_size: 2,
         mutation_rate: 2.0,
         mutation_size: 1.0,

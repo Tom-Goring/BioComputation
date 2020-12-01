@@ -83,7 +83,7 @@ impl Neuron {
         let mut rng = rand::thread_rng();
         let weights = (0..num_weights)
             .into_iter()
-            .map(|_| rng.gen_range(-0.5, 0.5))
+            .map(|_| rng.gen_range(-5.0, 5.0))
             .collect();
         Self { weights }
     }
