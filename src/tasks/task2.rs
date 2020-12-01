@@ -50,7 +50,7 @@ lazy_static! {
 pub fn run_data_science_task() {
     let config = crate::AlgorithmConfig {
         population_size: 10000,
-        epochs: 200,
+        epochs: 500,
         tournament_size: 2,
         mutation_rate: 2.0,
         mutation_size: 1.0,
@@ -95,7 +95,7 @@ pub fn run_data_science_task() {
 
 impl Individual for Network {
     fn new() -> Self {
-        Self::new(&[6, 3, 1])
+        Self::new(&[6, 8, 1])
     }
 
     fn crossover(&self, partner: &Self) -> Self {
@@ -157,17 +157,6 @@ impl Individual for Network {
             .iter()
             .map(|(input, _)| self.predict(input))
             .collect();
-
-        // let mut correct = 0;
-        // for (ideal_result, actual_result) in ideal_results.iter().zip(&actual_results) {
-        //     if *ideal_result as u32 == *actual_result as u32 {
-        //         correct += 1;
-        //     }
-        // }
-
-        // let percent_correct = ((correct as f64 / TRAINING_SET_LEN as f64) * 100.0) as u32;
-        //
-        // percent_correct as f64
 
         1.0 / mean_squared_error(&ideal_results, &actual_results)
     }
