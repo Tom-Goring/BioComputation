@@ -95,7 +95,7 @@ pub fn run_data_science_task() {
 
 impl Individual for Network {
     fn new() -> Self {
-        Self::new(&[6, 3, 3, 3, 3, 3, 3, 3, 1])
+        Self::new(&[6, 3, 1])
     }
 
     fn crossover(&self, partner: &Self) -> Self {
