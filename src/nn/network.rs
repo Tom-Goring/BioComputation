@@ -1,9 +1,11 @@
+use crate::Individual;
 use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Network {
     pub layers: Vec<Vec<Neuron>>,
     layer_sizes: Vec<u32>,
+    pub current_fitness: f64,
 }
 
 impl Network {
@@ -24,18 +26,27 @@ impl Network {
             prev_layer_size = layer_size;
         }
         layers.shrink_to_fit();
-        Self {
+
+        let mut network = Self {
             layers,
             layer_sizes: layer_sizes.to_vec(),
-        }
+            current_fitness: 0.0,
+        };
+
+        network.current_fitness = network.calculate_fitness();
+
+        network
     }
 
     pub fn from_layers(layers: Vec<Vec<Neuron>>) -> Network {
         let layer_sizes = layers.iter().map(|layer| layer.len() as u32).collect();
-        Self {
+        let mut network = Self {
             layers,
             layer_sizes,
-        }
+            current_fitness: 0.0,
+        };
+        network.current_fitness = network.calculate_fitness();
+        network
     }
 
     pub fn predict(&self, inputs: &[f64]) -> f64 {
@@ -56,7 +67,7 @@ impl Network {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Neuron {
     pub weights: Vec<f64>,
 }
@@ -91,7 +102,7 @@ impl Neuron {
 }
 
 #[inline]
-fn sigmoid(f: f64) -> f64 {
+pub fn sigmoid(f: f64) -> f64 {
     1.0 / (1.0 + (-f).exp())
 }
 

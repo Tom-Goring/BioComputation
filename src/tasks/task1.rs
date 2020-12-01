@@ -6,9 +6,9 @@ pub fn run_task_1() {
     let config = crate::AlgorithmConfig {
         population_size: 50,
         epochs: 50,
-        tournament_size: 4,
-        mutation_rate: 1.0,
-        mutation_size: 2.0,
+        tournament_size: 2,
+        mutation_rate: 0.1,
+        mutation_size: 0.5,
     };
 
     let stats = crate::run::<Individual>(config);
@@ -58,6 +58,10 @@ impl crate::Individual for Individual {
     }
 
     fn fitness(&self) -> f64 {
+        self.genes.iter().sum()
+    }
+
+    fn calculate_fitness(&self) -> f64 {
         self.genes.iter().sum()
     }
 }
