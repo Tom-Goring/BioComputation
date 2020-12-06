@@ -1,12 +1,14 @@
-use crate::nn::network::{Network, Neuron};
+use crate::network::{sigmoid, Network, Neuron};
 use crate::Individual;
 use gnuplot::PlotOption::Color;
 use gnuplot::{AxesCommon, Figure};
 use lazy_static::lazy_static;
 use num::traits::Pow;
 use rand::Rng;
+use random_color::RandomColor;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::time::Instant;
 
 const TRAINING_SET_LEN: usize = 1400;
 
@@ -50,7 +52,7 @@ lazy_static! {
 pub fn run_data_science_task() {
     let config = crate::AlgorithmConfig {
         population_size: 10000,
-        epochs: 5000,
+        epochs: 500,
         tournament_size: 2,
         mutation_rate: 2.0,
         mutation_size: 1.0,
@@ -62,33 +64,71 @@ pub fn run_data_science_task() {
         TEST_DATA.len()
     );
 
-    let stats = crate::run::<Network>(config);
-    let solution = &stats.solution;
+    let mut stats_array = Vec::new();
+    let mut accuracies = Vec::new();
+    let mut best_accuracy = 0f64;
 
-    let percent_correct = (TEST_DATA
-        .iter()
-        .map(|(inputs, output)| {
-            (
-                solution.predict(inputs).round() as i32,
-                output.round() as i32,
-            )
-        })
-        .filter(|(obtained_answer, ideal_answer)| (*obtained_answer == *ideal_answer))
-        .count() as f64
-        / TEST_DATA.len() as f64)
-        * 100.0 as f64;
+    let now = Instant::now();
 
-    log::info!("Accuracy of {}%", percent_correct.round() as u32);
+    let runs = 10;
+
+    for _ in 0..runs {
+        let stats = crate::run::<Network>(config);
+        let solution = &stats.solution;
+
+        stats_array.push(stats.clone());
+
+        let percent_correct = (TEST_DATA
+            .iter()
+            .map(|(inputs, output)| {
+                (
+                    solution.predict(inputs).round() as i32,
+                    output.round() as i32,
+                )
+            })
+            .filter(|(obtained_answer, ideal_answer)| (*obtained_answer == *ideal_answer))
+            .count() as f64
+            / TEST_DATA.len() as f64)
+            * 100.0 as f64;
+
+        best_accuracy = if percent_correct > best_accuracy {
+            percent_correct
+        } else {
+            best_accuracy
+        };
+
+        accuracies.push(percent_correct);
+    }
+
+    let average_accuracy: f64 = accuracies.iter().sum::<f64>() / accuracies.len() as f64;
+
+    log::info!(
+        "Finished {} runs in {:.2}s",
+        runs,
+        now.elapsed().as_secs_f32()
+    );
+    log::info!(
+        "Networks achieve an average accuracy of {:.2}%",
+        average_accuracy
+    );
+    log::info!(
+        "Networks achieved a highest accuracy of {:.2}%",
+        best_accuracy
+    );
 
     let mut fg = Figure::new();
     let axes = fg.axes2d();
-    axes.lines(
-        0..config.epochs,
-        &stats.average_generational_fitness,
-        &[Color("green")],
-    );
+
+    stats_array.iter().for_each(|stats| {
+        axes.lines(
+            0..config.epochs,
+            &stats.average_generational_fitness,
+            &[Color(&RandomColor::new().to_hex())],
+        );
+    });
+
     axes.set_x_label("Generation", &[])
-        .set_y_label("Average percent accuracy", &[]);
+        .set_y_label("Average fitness", &[]);
 
     fg.show().unwrap();
 }
@@ -158,7 +198,7 @@ impl Individual for Network {
             .map(|(input, _)| self.predict(input))
             .collect();
 
-        1.0 / mean_squared_error(&ideal_results, &actual_results)
+        sigmoid(1.0 / mean_squared_error(&ideal_results, &actual_results))
     }
 }
 

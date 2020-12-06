@@ -1,6 +1,5 @@
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use std::time::Instant;
 
 pub trait Individual: Clone + Send + Sync {
     fn new() -> Self;
@@ -19,6 +18,7 @@ pub struct AlgorithmConfig {
     pub mutation_size: f64,
 }
 
+#[derive(Clone)]
 pub struct AlgorithmStats<I: Individual> {
     pub total_generational_fitness: Vec<f64>,
     pub average_generational_fitness: Vec<f64>,
@@ -43,12 +43,7 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats<I> {
 
     let mut best_candidate: I = I::new();
 
-    let now = Instant::now();
-
     for _ in 0..config.epochs {
-        // log::info!("--------------------------------------------");
-        // log::info!("Beginning epoch {} of training", current_epoch);
-
         let breeding_population: Vec<I> = (0..config.population_size)
             .into_par_iter()
             .map(|_| {
@@ -105,8 +100,6 @@ pub fn run<I: Individual>(config: AlgorithmConfig) -> AlgorithmStats<I> {
         total_generational_fitness.push(total_fitness);
         average_generational_fitness.push(total_fitness / population.len() as f64);
     }
-
-    log::info!("Training finished in {}s", now.elapsed().as_secs_f32());
 
     AlgorithmStats {
         total_generational_fitness,
